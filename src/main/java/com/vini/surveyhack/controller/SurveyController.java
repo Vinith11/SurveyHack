@@ -6,6 +6,8 @@ import com.vini.surveyhack.service.SurveyService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
@@ -15,6 +17,9 @@ public class SurveyController {
 
     @Autowired
     private SurveyService surveyService;
+
+    @Autowired
+    private SimpMessagingTemplate messagingTemplate;
 
     @GetMapping
     public List<Survey> getAllSurveys() {
@@ -34,27 +39,22 @@ public class SurveyController {
 
     @PostMapping
     public Survey createSurvey(@RequestBody Survey survey) {
-        return surveyService.createSurvey(survey);
+        Survey createdSurvey = surveyService.createSurvey(survey);
+        messagingTemplate.convertAndSend("/topic/surveys", createdSurvey);
+        return createdSurvey;
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<Survey> updateSurvey(@PathVariable Long id, @RequestBody Survey surveyDetails) {
+    public Survey updateSurvey(@PathVariable Long id, @RequestBody Survey surveyDetails) {
         Survey updatedSurvey = surveyService.updateSurvey(id, surveyDetails);
-
-        if (updatedSurvey != null) {
-            return ResponseEntity.ok(updatedSurvey);
-        } else {
-            return ResponseEntity.notFound().build();
-        }
+        messagingTemplate.convertAndSend("/topic/surveys", updatedSurvey);
+        return updatedSurvey;
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteSurvey(@PathVariable Long id) {
-        if (surveyService.deleteSurvey(id)) {
-            return ResponseEntity.noContent().build();
-        } else {
-            return ResponseEntity.notFound().build();
-        }
+    public void deleteSurvey(@PathVariable Long id) {
+        surveyService.deleteSurvey(id);
+        messagingTemplate.convertAndSend("/topic/surveys", "Survey with ID " + id + " deleted");
     }
 }
 
