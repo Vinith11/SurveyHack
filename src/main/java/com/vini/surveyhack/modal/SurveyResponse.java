@@ -2,6 +2,8 @@ package com.vini.surveyhack.modal;
 
 
 import jakarta.persistence.*;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 
 import java.util.Map;
 
@@ -12,10 +14,15 @@ public class SurveyResponse {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @NotNull(message = "Survey ID is required")
     private Long surveyId;
 
     @ElementCollection
-    private Map<String, String> responses;
+    @CollectionTable(name = "response_data", joinColumns = @JoinColumn(name = "response_id"))
+    @MapKeyColumn(name = "question")
+    @Column(name = "answer")
+    private Map<@NotBlank(message = "Question cannot be blank") String,
+            @NotBlank(message = "Answer cannot be blank") String> responses;
 
     // Constructors, getters, and setters
     public SurveyResponse() {}
