@@ -1,6 +1,3 @@
-Sure! Here's a detailed and attractive `README.md` for the backend part of your project:
-
----
 
 # 🌍 Field Survey Data Collection App - Backend 🛠️
 
